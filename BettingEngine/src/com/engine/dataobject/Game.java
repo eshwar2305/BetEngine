@@ -1,3 +1,4 @@
+package com.engine.dataobject;
 import java.sql.Timestamp;
 
 public class Game{
@@ -7,20 +8,35 @@ public class Game{
 		private String teamB;
 		private String winTeam;
 		private Timestamp startDate;
-		private Timestamp endDate;
+		private String status;
 		private String description;
 		private String place;
 		
+		
+		public String getStatus() {
+			return status;
+		}
+		public void setStatus(String status) {
+			this.status = status;
+		}
+		public String getPlace() {
+			return place;
+		}
+		public void setPlace(String place) {
+			this.place = place;
+		}
 		public Game(){};
-		public Game(int gameId, String teamA, String teamB, String winTeam, Timestamp startDate, Timestamp endDate, String description){
+		public Game(int gameId, String teamA, String teamB, String winTeam, Timestamp startDate, String status, String description, String place){
 			this.gameId = gameId;
 			this.teamA= teamA;
 			this.teamB = teamB;
 			this.winTeam = winTeam;
 			this.startDate = startDate;
-			this.endDate = endDate;
+			this.place = place;
 			this.description = description;
+			this.status = status;
 		}
+		
 		public int getGameId() {
 			return gameId;
 		}
@@ -51,22 +67,11 @@ public class Game{
 		public void setStartDate(Timestamp startDate) {
 			this.startDate = startDate;
 		}
-		public Timestamp getEndDate() {
-			return endDate;
-		}
-		public void setEndDate(Timestamp endDate) {
-			this.endDate = endDate;
-		}
+		
 		public String getDescription() {
 			return description;
 		}
 		public void setDescription(String description) {
 			this.description = description;
-		}
-		public String getPlace() {
-			return place;
-		}
-		public void setPlace(String place) {
-			this.place = place;
 		}
 	}

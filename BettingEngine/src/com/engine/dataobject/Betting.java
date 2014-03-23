@@ -1,3 +1,4 @@
+package com.engine.dataobject;
 import java.sql.Timestamp;
 
 
@@ -7,8 +8,9 @@ public class Betting {
 	private int bettingId;
 	private String playerId;
 	private int gameId;
-	private String betTeam;
+	private String betTeam;	
 	private float score;
+	private int hasWon;
 	private Timestamp betDate;
 	
 	public int getBettingId() {
@@ -72,5 +74,15 @@ public class Betting {
 		this.betTeam = betTeam;
 		this.score = score;
 		this.betDate = betDate;		
+	}
+
+
+	public int getHasWon() {
+		return hasWon;
+	}
+
+
+	public void setHasWon(int hasWon) {
+		this.hasWon = hasWon;
 	}
 }

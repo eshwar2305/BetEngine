@@ -1,12 +1,13 @@
+package com.engine.app;
 import java.io.BufferedReader;
-import com.engine.dataaccess.*;
-import com.engine.dataobject.*;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import com.engine.dataaccess.TryDBAccess;
+import com.engine.dataobject.Game;
 
 
 public class Engine implements LogFileTailerListener,CricinfoListener,NextMatchListener{
@@ -22,15 +23,11 @@ public class Engine implements LogFileTailerListener,CricinfoListener,NextMatchL
 	private int m_noOfMatches;
 	private ArrayList<Game> m_gamelist;
 	
-	private String[] players = {"Eshwar","Abhi","Amruth","Anuranjan","Apurva","Ashwin",
-								"Chaitra","DN","PM","Prashanth","Rajiv","Ranju","Ravi",
-								"Shashi","Sinchana","Sindhu","Swaroop","Veena","Hemanth","Pradeep"
-								};
 	String[] m_cmd = {
 	        "python",
-	        "Writer_Yowsup\\yowsup-cli",
+	        "D:\\Work\\yowsup\\BettingEngine\\yowsup-cli",
 	        "-c",
-	        "Writer_Yowsup\\config.example",
+	        "config.example",
 	        "-s",
 	        "13026901224", //Send msg to Eshu number
 	        //"13026901224-1333685017", -- BG family
@@ -40,19 +37,19 @@ public class Engine implements LogFileTailerListener,CricinfoListener,NextMatchL
 	
 	
 	public void spark() {
+		m_dbHandle = new TryDBAccess(); //Eshu added this to initialize the object;
 		loadPhoneNumbers();
-	    m_tailer = new LogFileTailer( new File( "Reader_Yowsup\\Examples\\out.txt" ), 1000, false );
+	    m_tailer = new LogFileTailer( new File( "D:\\Work\\yowsup\\whatsapp\\out.txt" ), 1000, false );
 	    m_tailer.addLogFileTailerListener( this );
 	    m_tailer.start();
-	    m_dbHandle = new TryDBAccess();
 	    
-	    /*m_nmDetails = new NextMatchDetails(m_dbHandle);
+	    m_nmDetails = new NextMatchDetails(m_dbHandle);
 	    m_nmDetails.addNextMatchListener(this);
 	    m_nmDetails.start();
 	    
 	    m_cricinfo =  new Cricinfo("http://www.espncricinfo.com/world-t20/engine/series/628368.html");
 		m_cricinfo.addCricinfoListener(this);
-		m_cricinfo.start();*/
+		m_cricinfo.start();
 	}
 	
 	@Override
@@ -80,32 +77,12 @@ public class Engine implements LogFileTailerListener,CricinfoListener,NextMatchL
 				m_m3Place = g.getPlace();
 			}
 		}
-		
-		
 	}
 
 	@Override
 	public void fireMatchResultAvailable(Game g) {
 		// call the win trigger for DB update
 		m_dbHandle.winTrigger(g.getGameId(), g.getWinTeam());
-		
-		//sleep for 5s - let DB get updated with new calculation
-		
-		try {
-			Thread.sleep(5000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		StringBuffer sendMsg = new StringBuffer();
-		sendMsg.append("Winner of M");
-		sendMsg.append(g.getGameId());
-		sendMsg.append(": ");
-		sendMsg.append(g.getWinTeam());
-		sendMsg.append("Scorecard: ");
-		sendMsg.append(getCurrentScoreSheet());
-    	fireMsg(sendMsg.toString());
 	}
 
 	@Override
@@ -113,23 +90,22 @@ public class Engine implements LogFileTailerListener,CricinfoListener,NextMatchL
 
 		String number,name,timestamp,msg;
 
-	    System.out.println("out.txt - " + line );
+	    //System.out.println( line );
 		
 	    number = line.substring(0, 12);
-	    //System.out.println(number);
+	    System.out.println(number);
 	    
 	    name = m_mp.get(number); // name of the better
-	    //System.out.println(name);
+	    System.out.println(name);
 	    
 	    timestamp = line.substring(13,31);
 	    
 	    msg = line.substring(32);
 	    msg = msg.toLowerCase();
-	    //System.out.println(msg);
+	    System.out.println(msg);
 	    
 	    if(name != null){
-	    	fireMsg(msg);
-	    	/*StringBuffer sendMsg = new StringBuffer();
+	    	StringBuffer sendMsg = new StringBuffer();
 	    	if(msg.contains("score")){
 		    	sendMsg = getCurrentScoreSheet();
 		    	
@@ -147,21 +123,13 @@ public class Engine implements LogFileTailerListener,CricinfoListener,NextMatchL
 	    		sendMsg.append(name);
 	    		sendMsg.append(" please specify correct team names.");
 	    		fireMsg(sendMsg.toString());  // indiviual bet error msg
-	    		 
 	    		return;
 	    	}else{
 	    		sendMsg.append(name);
 	    		sendMsg.append(": ");
 		    	for(int i=0;i<noOfBetsInMsg.size();i++){
 		    		String team = noOfBetsInMsg.get(i);
-		    		
-		    		if(msg.contains("Proxy")){
-		    			String proxyName = getProxyName(msg);
-		    			if(proxyName == null) return;
-		    			name = proxyName + "";
-		    		}
-
-		    		placeBetForName(name,team);
+		    		placeBetForName(number,team);//Eshu replaced name with number, number is uniqueId
 		    		sendMsg.append(team);
 		    		sendMsg.append("-");
 		    	}
@@ -171,7 +139,6 @@ public class Engine implements LogFileTailerListener,CricinfoListener,NextMatchL
 	    	sendMsg = getCurrentBetSheet();
 	    	
 	    	fireMsg(sendMsg.toString());  // Latest betsheet
-	    	*/
 	    	
 	    }else{
 	    	//Do nothing
@@ -179,18 +146,9 @@ public class Engine implements LogFileTailerListener,CricinfoListener,NextMatchL
 	    }
 	}
 
-	private String getProxyName(String msg) {
-		for(int i=0;i<players.length;i++){
-			if(msg.contains(players[i])){
-				return players[i];
-			}
-		}
-		return null;
-	}
-
 	private StringBuffer getCurrentScoreSheet() {
-		// Ranju - Query DB to give me the current Score sheet 
-		return null;
+		// Ranju  (done- Eshu verify and remove comment)- Query DB to give me the current Score sheet		
+		return new StringBuffer(m_dbHandle.displayScoreBoard());
 	}
 
 
@@ -209,16 +167,12 @@ public class Engine implements LogFileTailerListener,CricinfoListener,NextMatchL
 	}
 
 	private StringBuffer getCurrentBetSheet() {
-		// Ranju - Query DB to give me the current Bet for all the matches whose betting is going on
-		
-		//dbHandle.getCurrentBetSheet();
-		StringBuffer strBuf = new StringBuffer();
-		return strBuf;
+		// Ranju (done - Eshu verify and remove comment)- Query DB to give me the current Bet for all the matches whose betting is going on
+		return new StringBuffer(m_dbHandle.displayCurrentBet());		
 	}
 
 	private void placeBetForName(String number, String team) {
-		// TODO Auto-generated method stub
-		// Ranju - Input to DB the bets
+		// Ranju - (seems done - wat else? - remove comment) Input to DB the bets
 		m_dbHandle.insertBetting(number, team);
 	}
 
@@ -242,10 +196,8 @@ public class Engine implements LogFileTailerListener,CricinfoListener,NextMatchL
 	}
 
 	private void loadPhoneNumbers() {
-		m_mp = m_dbHandle.getPlayers();
-		
-		/*
-		m_mp.put("13026901224@", "Eshwar");
+		m_mp = m_dbHandle.getPlayers(); //Eshu - fetching this from DB itself
+		/*m_mp.put("13026901224@", "Eshwar");
 		m_mp.put("919886558406", "Abhi");
 		m_mp.put("919845208308", "Amruth");
 		m_mp.put("919686433880", "Anuranjan");
@@ -264,8 +216,7 @@ public class Engine implements LogFileTailerListener,CricinfoListener,NextMatchL
 		m_mp.put("919880716292", "Swaroop");
 		m_mp.put("919701550588", "Veena");
 		m_mp.put("919164444598", "Hemanth");
-		m_mp.put("919880338008", "Pradeep");
-		*/
+		m_mp.put("919880338008", "Pradeep");*/
 	}
 
 }

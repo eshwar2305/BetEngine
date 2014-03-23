@@ -1,18 +1,18 @@
+package com.engine.app;
 import java.io.IOException;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import com.engine.dataaccess.*;
-import com.engine.dataobject.*;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
+
+import com.engine.dataobject.Game;
 
 
 public class Cricinfo extends Thread{
@@ -61,8 +61,6 @@ public class Cricinfo extends Thread{
 			if(isMatchComplete(m_onGoingMatchNumber)){
 				m_game.setGameId(m_onGoingMatchNumber);
 				m_game.setWinTeam(getMatchWinner(m_onGoingMatchNumber));
-				m_game.setTeamA(getTeamA(m_onGoingMatchNumber));
-				m_game.setTeamB(getTeamB(m_onGoingMatchNumber));
 				fireMatchResultAvailable(m_game);
 				
 				// increment the match count number to start querying for next match details
