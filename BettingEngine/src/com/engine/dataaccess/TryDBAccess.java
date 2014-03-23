@@ -3,8 +3,10 @@ package com.engine.dataaccess;
 import com.engine.dataobject.*;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 
 public class TryDBAccess
@@ -344,9 +346,18 @@ public class TryDBAccess
 		
 		try {
 			ResultSet rs = scoreGet.executeQuery();
+			List<ScoreObject> soList = new ArrayList<ScoreObject>();
 			StringBuffer buf = new StringBuffer();
 			while(rs.next()){
-				buf.append(rs.getString(1)).append("\t: ").append(rs.getFloat(2)).append("\t: ").append(rs.getInt(3)).append("\n");
+				//buf.append(rs.getString(1)).append("\t: ").append(rs.getFloat(2)).append("\t: ").append(rs.getInt(3)).append("\n");
+				ScoreObject so = new ScoreObject(rs.getString(1),rs.getFloat(2),rs.getInt(3));
+				soList.add(so);
+			}
+			Collections.sort(soList);
+			Iterator<ScoreObject> it  = soList.iterator();
+			int i = 1;
+			while(it.hasNext()){
+				buf.append(i++).append("\t:").append(it.next());
 			}
 			rs.close();		
 			ret = buf.toString();
@@ -354,8 +365,7 @@ public class TryDBAccess
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return ret;
-		
+		return ret;		
 	}
 	
 	
@@ -453,7 +463,7 @@ public class TryDBAccess
     */	
     	
     //	dbA.insertBetting("eshu123", "India");
-    	dbA.winTrigger(5, "India");
+    //	dbA.winTrigger(5, "India");
     
     	
     	System.out.println(dbA.displayCurrentBet());
