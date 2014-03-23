@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="WINDOWS-1252" standalone="no"?>
+<jardesc>
+    <jar path="C:/Users/enarayan.ORADEV/Desktop/BettingEngine.jar"/>
+    <options buildIfNeeded="true" compress="true" descriptionLocation="/BettingEngine/BettingEngineDesc.jardesc" exportErrors="true" exportWarnings="true" includeDirectoryEntries="true" overwrite="true" saveDescription="true" storeRefactorings="false" useSourceFolders="false"/>
+    <storedRefactorings deprecationInfo="true" structuralOnly="false"/>
+    <selectedProjects/>
+    <manifest generateManifest="true" manifestLocation="" manifestVersion="1.0" reuseManifest="false" saveManifest="false" usesManifest="true">
+        <sealing sealJar="false">
+            <packagesToSeal/>
+            <packagesToUnSeal/>
+        </sealing>
+    </manifest>
+    <selectedElements exportClassFiles="true" exportJavaFiles="false" exportOutputFolder="false">
+        <file path="/BettingEngine/setup.py"/>
+        <folder path="/BettingEngine/sandbox"/>
+        <folder path="/BettingEngine/dateutil"/>
+        <file path="/BettingEngine/LICENSE"/>
+        <file path="/BettingEngine/MANIFEST.in"/>
+        <file path="/BettingEngine/example.py"/>
+        <file path="/BettingEngine/config.example"/>
+        <file path="/BettingEngine/test.py"/>
+        <file path="/BettingEngine/PKG-INFO"/>
+        <file path="/BettingEngine/Makefile"/>
+        <file path="/BettingEngine/yowsup-cli"/>
+        <folder path="/BettingEngine/Yowsup"/>
+        <file path="/BettingEngine/updatezinfo.py"/>
+        <file path="/BettingEngine/countries.csv"/>
+        <folder path="/BettingEngine/python_dateutil.egg-info"/>
+        <file path="/BettingEngine/.classpath"/>
+        <file path="/BettingEngine/whatsapp.bat"/>
+        <javaElement handleIdentifier="=BettingEngine/src"/>
+        <folder path="/BettingEngine/Examples"/>
+        <file path="/BettingEngine/.pydevproject"/>
+        <file path="/BettingEngine/out.txt"/>
+        <file path="/BettingEngine/setup.cfg"/>
+        <file path="/BettingEngine/test.pyc"/>
+        <file path="/BettingEngine/NEWS"/>
+        <file path="/BettingEngine/.project"/>
+        <file path="/BettingEngine/README"/>
+    </selectedElements>
+</jardesc>
