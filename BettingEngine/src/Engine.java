@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 
 
 public class Engine implements LogFileTailerListener,CricinfoListener,NextMatchListener{
@@ -22,10 +23,11 @@ public class Engine implements LogFileTailerListener,CricinfoListener,NextMatchL
 	private int m_noOfMatches;
 	private ArrayList<Game> m_gamelist;
 	
-	private String[] players = {"Eshwar","Abhi","Amruth","Anuranjan","Apurva","Ashwin",
+	/*private String[] players = {"Eshwar","Abhi","Amruth","Anuranjan","Apurva","Ashwin",
 								"Chaitra","DN","PM","Prashanth","Rajiv","Ranju","Ravi",
 								"Shashi","Sinchana","Sindhu","Swaroop","Veena","Hemanth","Pradeep"
 								};
+							*/
 	String[] m_cmd = {
 	        "python",
 	        "Writer_Yowsup\\yowsup-cli",
@@ -81,6 +83,7 @@ public class Engine implements LogFileTailerListener,CricinfoListener,NextMatchL
 			}
 		}
 		
+		//Eshu - you should publish this on the screen
 		
 	}
 
@@ -128,16 +131,14 @@ public class Engine implements LogFileTailerListener,CricinfoListener,NextMatchL
 	    //System.out.println(msg);
 	    
 	    if(name != null){
-	    	fireMsg(msg);
-	    	/*StringBuffer sendMsg = new StringBuffer();
+	    	//fireMsg(msg);
+	    	StringBuffer sendMsg = new StringBuffer();
 	    	if(msg.contains("score")){
-		    	sendMsg = getCurrentScoreSheet();
-		    	
+		    	sendMsg = getCurrentScoreSheet();		    	
 		    	fireMsg(sendMsg.toString());  // Latest scoresheet
 		    	return;
 	    	}else if(msg.contains("bet")){
-	    		sendMsg = getCurrentBetSheet();
-		    	
+	    		sendMsg = getCurrentBetSheet();		    	
 		    	fireMsg(sendMsg.toString());  // Latest Betsheet
 		    	return;
 	    	}
@@ -146,22 +147,20 @@ public class Engine implements LogFileTailerListener,CricinfoListener,NextMatchL
 	    	if(noOfBetsInMsg == null){
 	    		sendMsg.append(name);
 	    		sendMsg.append(" please specify correct team names.");
-	    		fireMsg(sendMsg.toString());  // indiviual bet error msg
-	    		 
+	    		fireMsg(sendMsg.toString());  // indiviual bet error msg	    		 
 	    		return;
 	    	}else{
 	    		sendMsg.append(name);
 	    		sendMsg.append(": ");
 		    	for(int i=0;i<noOfBetsInMsg.size();i++){
-		    		String team = noOfBetsInMsg.get(i);
-		    		
+		    		String team = noOfBetsInMsg.get(i);		    		
 		    		if(msg.contains("Proxy")){
 		    			String proxyName = getProxyName(msg);
 		    			if(proxyName == null) return;
 		    			name = proxyName + "";
 		    		}
 
-		    		placeBetForName(name,team);
+		    		placeBetForName(number,team);//Eshu - changed name to number - verify (also chk if u need the above proxy lofgic)
 		    		sendMsg.append(team);
 		    		sendMsg.append("-");
 		    	}
@@ -171,8 +170,7 @@ public class Engine implements LogFileTailerListener,CricinfoListener,NextMatchL
 	    	sendMsg = getCurrentBetSheet();
 	    	
 	    	fireMsg(sendMsg.toString());  // Latest betsheet
-	    	*/
-	    	
+	    		    	
 	    }else{
 	    	//Do nothing
 	    	return;
@@ -180,17 +178,25 @@ public class Engine implements LogFileTailerListener,CricinfoListener,NextMatchL
 	}
 
 	private String getProxyName(String msg) {
-		for(int i=0;i<players.length;i++){
+		
+		/*for(int i=0;i<players.length;i++){
 			if(msg.contains(players[i])){
 				return players[i];
 			}
+		}*/
+		//Eshu - replaced the above with below
+		Iterator<String> iter = m_mp.values().iterator();
+		while(iter.hasNext()){
+			String player = iter.next();
+			if(msg.contains(player)) 
+				return player;			
 		}
 		return null;
 	}
 
 	private StringBuffer getCurrentScoreSheet() {
-		// Ranju - Query DB to give me the current Score sheet 
-		return null;
+		// Ranju - (Eshu - Done, verify) Query DB to give me the current Score sheet 
+		return new StringBuffer(m_dbHandle.displayScoreBoard());
 	}
 
 
@@ -209,16 +215,14 @@ public class Engine implements LogFileTailerListener,CricinfoListener,NextMatchL
 	}
 
 	private StringBuffer getCurrentBetSheet() {
-		// Ranju - Query DB to give me the current Bet for all the matches whose betting is going on
+		// Ranju -(Eshu-Done, verify) Query DB to give me the current Bet for all the matches whose betting is going on
 		
-		//dbHandle.getCurrentBetSheet();
-		StringBuffer strBuf = new StringBuffer();
-		return strBuf;
+		return new StringBuffer(m_dbHandle.displayCurrentBet());
 	}
 
 	private void placeBetForName(String number, String team) {
 		// TODO Auto-generated method stub
-		// Ranju - Input to DB the bets
+		// Ranju - (done) Input to DB the bets
 		m_dbHandle.insertBetting(number, team);
 	}
 

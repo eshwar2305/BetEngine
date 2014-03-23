@@ -4,6 +4,7 @@ import com.engine.dataobject.*;
 
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -12,13 +13,15 @@ import java.util.Set;
 
 public class NextMatchDetails extends Thread{
 	/**
-	   * How frequently to check for next match; 24hrs
+	   * How frequently to check for next match; 4hrs
 	   */
-	  private long m_sampleInterval = 1000 * 60 * 60 * 24;
+	  private long m_sampleInterval = 1000 * 60 * 60 * 4;
 	  
-	  private boolean m_isBettingForNextMatchON = true;
+	  private boolean m_bettingWindowChanged = false;
 	  
-	  private ArrayList<Game> m_bettingGameList = new ArrayList<Game>();
+	  private ArrayList<Game> currentBettingGameList = new ArrayList<Game>();
+	 
+	  
 	  private TryDBAccess m_dbHandle;
 	  /**
 	   * Set of listeners
@@ -51,71 +54,55 @@ public class NextMatchDetails extends Thread{
 	    }
 	  }
 	  
+	  /***Eshu -  **/
 	  public void run()
 	  {
-		  //on the first run isBettingNextMatchON is set to true - begining of series
+		ArrayList <Game> newBettingGameList = new ArrayList<Game>();
+		
 		while(true){
-			if(m_isBettingForNextMatchON){
-				m_bettingGameList = getBettingGameListFromDB(); 
-				fireNextMatchDetailsAvailable(m_bettingGameList);
-				m_isBettingForNextMatchON = false;
-				
-				//Once you get the next matches to bet for - go to sleep and wake up after 24hrs 
-				//sleep for 24Hrs;
-				
-				try {
-					sleep(m_sampleInterval);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}else{
-				
-				//After waking up from 24hrs sleep, query if there are any matches for today
-				ArrayList todaysGameList = getTodaysGameList();
-				  
-				if(todaysGameList ==  null){
-					// if there are no matches for today continue betting with same matches for next 24hrs
-					m_isBettingForNextMatchON = false;
-				}else{
-					// if there are games for today
-					for(int i=0;i<todaysGameList.size();i++){
-						if(m_isBettingForNextMatchON == false){
-							// Keep checking if any game in today has started
-							// if its started then we need to get the next set of matches for betting
-							// turn the isBettingForNextMatchON = true;
-							Game m1 = (Game) todaysGameList.get(i);
-							if(checkIfMatchStarted(i)){
-								m_isBettingForNextMatchON = true; //  true if any game today is started
-							}
-						}
-					}
-				}	
+			newBettingGameList = this.getBettingGameList();	
+			m_bettingWindowChanged = this.isBettingWindowChanged(newBettingGameList);			
+			if(m_bettingWindowChanged){				
+				fireNextMatchDetailsAvailable(currentBettingGameList);				
 			}		
+			
+			//Once you get the next matches to bet for - go to sleep and wake up after 24hrs 
+			//sleep for 24Hrs;
+			try {
+				sleep(m_sampleInterval);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}	    
 	  }
 
-	private ArrayList<Game> getTodaysGameList() {
+	private ArrayList<Game> getBettingGameList() {
 		//Ranju - Query DB to get the today matches
-		//in DB and return a List of Games.
-		// if no games today send null
-		return m_dbHandle.getTodaysGame();
-	}
-
-	private ArrayList<Game> getBettingGameListFromDB() {
-		//Ranju - Query DB to get the next matches(One s which state!=completed or state!=started)
-		//in DB and return a List of Games. Next day s matches
-		return null;
-	}
-
-	private boolean checkIfMatchStarted(int i) {
-		// TODO Auto-generated method stub
-		boolean flag;
-		int matchNumber = i;
-		
-		// Ranju - Query DB to check if match i has started - return true or false;
-		
-		return true;
+		return m_dbHandle.getGamesForBetting();
 	}
 	
+	private boolean isBettingWindowChanged(ArrayList<Game> newBettingGameList){
+		boolean ret = false;
+		if((currentBettingGameList != null && newBettingGameList == null) ||
+				(currentBettingGameList == null && newBettingGameList != null)||
+				currentBettingGameList.size() != newBettingGameList.size())
+				ret = true;
+		
+		List<Game> oldL = currentBettingGameList;
+		List<Game> newL = newBettingGameList;
+		
+		newL.removeAll(currentBettingGameList);
+		
+		if(oldL.isEmpty())
+			return false;		
+		
+		//refresh current
+		currentBettingGameList.clear();
+		currentBettingGameList.addAll(newBettingGameList);
+		
+		return ret;
+	}
+
+		
 }

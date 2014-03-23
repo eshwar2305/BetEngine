@@ -90,7 +90,7 @@ public class TryDBAccess
 	}
 	
 		
-	private ArrayList<Game> getGamesForBetting(){	
+	public ArrayList<Game> getGamesForBetting(){	
 		Game g = new Game();
 		Timestamp currentTimestamp = new Timestamp(new java.util.Date().getTime());
 		
