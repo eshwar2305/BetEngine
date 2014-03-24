@@ -1,6 +1,7 @@
 package com.engine.dataaccess;
 
 import com.engine.dataobject.*;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -103,7 +104,7 @@ public class TryDBAccess
 		ditchCache = !iter.hasNext(); //1. Cache Empty
 		while(iter.hasNext()){ //2. any of the elements has gone old,
 			g = (Game) iter.next();	
-			ditchCache = currentTimestamp.after(g.getStartDate());//corrupt ditch it						
+			ditchCache = currentTimestamp.after(g.getStartDate());//corrupt ditch it	- Ranjana - hits null					
 		}
 		if(!ditchCache) return gamesForBetting; //we are good 
 		gamesForBetting.clear();
@@ -465,11 +466,24 @@ public class TryDBAccess
     //	dbA.insertBetting("eshu123", "India");
     //	dbA.winTrigger(5, "India");
     
+    	ArrayList<Game> gList = dbA.getGamesForBetting();
+    	Iterator <Game> iter = gList.iterator();
+    	while(iter.hasNext()){
+    		Game g = (Game) iter.next();
+    		System.out.println("Game " + g.getGameId() + " : " + g.getTeamA() );
+    	}
+    
     	
     	System.out.println(dbA.displayCurrentBet());
     	System.out.println(dbA.displayScoreBoard());
     	dbA.close();    
     }
+
+	public int getLastMatchnumberWithResult() {
+		// TODO Auto-generated method stub
+		// Ranjana - Need the last match which was completed and result updated in database
+		return 16;
+	}
     
   	
 }

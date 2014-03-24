@@ -1,3 +1,5 @@
+package com.engine.app;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -48,6 +50,8 @@ public class CreateReaderProcess implements LogFileTailerListener{
 
 	public void create() {
 		newLogFileLine("Disconnected");
+		System.out.println("Working Directory = " +
+	              System.getProperty("user.dir"));
 	    m_tailer = new LogFileTailer( new File( "Reader_Yowsup\\Examples\\disconnected_out.txt" ), 1000, false );
 	    m_tailer.addLogFileTailerListener( this );
 	    m_tailer.start();

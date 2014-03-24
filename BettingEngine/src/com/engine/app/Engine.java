@@ -1,13 +1,15 @@
 package com.engine.app;
 import java.io.BufferedReader;
+import com.engine.dataaccess.*;
+import com.engine.dataobject.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import com.engine.dataaccess.TryDBAccess;
-import com.engine.dataobject.Game;
+import java.util.Iterator;
+import java.util.Map;
 
 
 public class Engine implements LogFileTailerListener,CricinfoListener,NextMatchListener{
@@ -25,11 +27,12 @@ public class Engine implements LogFileTailerListener,CricinfoListener,NextMatchL
 	
 	String[] m_cmd = {
 	        "python",
-	        "D:\\Work\\yowsup\\BettingEngine\\yowsup-cli",
+	        "Writer_Yowsup\\yowsup-cli",
 	        "-c",
-	        "config.example",
+	        "Writer_Yowsup\\config.example",
 	        "-s",
-	        "13026901224", //Send msg to Eshu number
+	        "13026901224-1394919313", //Send msg to Terminator
+	        //"13026901224", //Send msg to Eshu number
 	        //"13026901224-1333685017", -- BG family
 	        //"919686811944-1394712848", //- BAri talk
 	        "test"
@@ -39,7 +42,7 @@ public class Engine implements LogFileTailerListener,CricinfoListener,NextMatchL
 	public void spark() {
 		m_dbHandle = new TryDBAccess(); //Eshu added this to initialize the object;
 		loadPhoneNumbers();
-	    m_tailer = new LogFileTailer( new File( "D:\\Work\\yowsup\\whatsapp\\out.txt" ), 1000, false );
+	    m_tailer = new LogFileTailer( new File( "Reader_Yowsup\\Examples\\out.txt" ), 1000, false );
 	    m_tailer.addLogFileTailerListener( this );
 	    m_tailer.start();
 	    
@@ -55,34 +58,85 @@ public class Engine implements LogFileTailerListener,CricinfoListener,NextMatchL
 	@Override
 	public void fireNextMatchDetailsAvailable(ArrayList<Game> gameList) {
 		//initialize all string to empty
-		 
+		StringBuffer sendMsg =  new StringBuffer();
 		m_teamA =m_teamB =m_teamC =m_teamD =m_teamE =m_teamF ="";
 		m_noOfMatches = gameList.size();
 		for(int i=0;i<m_noOfMatches;i++){
 			Game g = gameList.get(0);
-			if(i == 1){
+			if(i == 0){
 				m_teamA = g.getTeamA();
 				m_teamB = g.getTeamB();
 				m_m1 = g.getGameId();
 				m_m1Place = g.getPlace();
-			}else if(i == 2){
+				sendMsg.append("M");
+				sendMsg.append(m_m1);
+				sendMsg.append(": ");
+				sendMsg.append(m_teamA);
+				sendMsg.append(" vs ");
+				sendMsg.append(m_teamB);
+				sendMsg.append(" at ");
+				sendMsg.append(m_m1Place);
+			}else if(i == 1){
 				m_teamC = g.getTeamA();
 				m_teamD = g.getTeamB();
 				m_m2 = g.getGameId();
 				m_m2Place = g.getPlace();
-			}else if(i == 3){
+				sendMsg.append("\n");
+				sendMsg.append("M");
+				sendMsg.append(m_m2);
+				sendMsg.append(": ");
+				sendMsg.append(m_teamC);
+				sendMsg.append(" vs ");
+				sendMsg.append(m_teamD);
+			}else if(i == 2){
 				m_teamE = g.getTeamA();
 				m_teamF = g.getTeamB();
 				m_m3 = g.getGameId();
 				m_m3Place = g.getPlace();
+				sendMsg.append("\n");
+				sendMsg.append("M");
+				sendMsg.append(m_m3);
+				sendMsg.append(": ");
+				sendMsg.append(m_teamE);
+				sendMsg.append(" vs ");
+				sendMsg.append(m_teamF);
 			}
 		}
+		
+		fireMsg(sendMsg.toString());
+
 	}
 
 	@Override
 	public void fireMatchResultAvailable(Game g) {
-		// call the win trigger for DB update
-		m_dbHandle.winTrigger(g.getGameId(), g.getWinTeam());
+		
+		int lastMatchnumberWithResult = m_dbHandle.getLastMatchnumberWithResult();
+		
+		if(g.getGameId() > lastMatchnumberWithResult){
+			// call the win trigger for DB update
+			m_dbHandle.winTrigger(g.getGameId(), g.getWinTeam());
+			
+			//sleep for 5s - let DB get updated with new calculation
+			
+			try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			StringBuffer sendMsg = new StringBuffer();
+			sendMsg.append("Winner of M");
+			sendMsg.append(g.getGameId());
+			sendMsg.append(": ");
+			sendMsg.append(g.getWinTeam());
+			sendMsg.append("\n");
+			sendMsg.append("Scorecard: ");
+			sendMsg.append("\n");
+			sendMsg.append(getCurrentScoreSheet());
+	    	fireMsg(sendMsg.toString());
+		}
+
 	}
 
 	@Override
@@ -128,8 +182,15 @@ public class Engine implements LogFileTailerListener,CricinfoListener,NextMatchL
 	    		sendMsg.append(name);
 	    		sendMsg.append(": ");
 		    	for(int i=0;i<noOfBetsInMsg.size();i++){
-		    		String team = noOfBetsInMsg.get(i);
-		    		placeBetForName(number,team);//Eshu replaced name with number, number is uniqueId
+		    		String team = noOfBetsInMsg.get(i);		    		
+		    		if(msg.contains("Proxy")){
+		    			String proxyName = getProxyName(msg);
+		    			if(proxyName == null) return;
+		    			name = proxyName + "";
+		    			number = m_mp.get(name) + "";
+		    		}
+
+		    		placeBetForName(number,team);//Eshu - changed name to number - verify (also chk if u need the above proxy lofgic)
 		    		sendMsg.append(team);
 		    		sendMsg.append("-");
 		    	}
@@ -144,6 +205,18 @@ public class Engine implements LogFileTailerListener,CricinfoListener,NextMatchL
 	    	//Do nothing
 	    	return;
 	    }
+	}
+
+	private String getProxyName(String msg) {
+
+		//Eshu - replaced the above with below
+		Iterator<String> iter = m_mp.values().iterator();
+		while(iter.hasNext()){
+			String player = iter.next();
+			if(msg.contains(player)) 
+				return player;			
+		}
+		return null;
 	}
 
 	private StringBuffer getCurrentScoreSheet() {
@@ -217,6 +290,18 @@ public class Engine implements LogFileTailerListener,CricinfoListener,NextMatchL
 		m_mp.put("919701550588", "Veena");
 		m_mp.put("919164444598", "Hemanth");
 		m_mp.put("919880338008", "Pradeep");*/
+	}
+	
+	public  String getNumberForPlayer(String player) {
+	    Iterator it = m_mp.entrySet().iterator();
+	    while (it.hasNext()) {
+	        Map.Entry pairs = (Map.Entry)it.next();
+	        String tempstr = (String) pairs.getValue();
+	        if(tempstr.equals(player)){
+	        	return tempstr;
+	        }         
+	    }
+	    return "";
 	}
 
 }
